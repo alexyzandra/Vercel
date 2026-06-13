@@ -153,11 +153,11 @@ type Phase = 'start' | 'battle' | 'results';
 
 export default function RankPage() {
   const params = useParams();
-  const userParam = (params?.user as string) || 'husband';
-  const userName = userParam === 'husband' ? 'Husband' : 'Wife';
-  const accentColor = userParam === 'husband' ? '#00d4ff' : '#ffd700';
-  const accentAlt = userParam === 'husband' ? '#0077bb' : '#ff8c00';
-  const userEmoji = userParam === 'husband' ? '🤴' : '👸';
+  const userParam = (params?.user as string) || 'person1';
+  const userName = userParam === 'person1' ? 'Person 1' : 'Person 2';
+  const accentColor = userParam === 'person1' ? '#00d4ff' : '#ffd700';
+  const accentAlt = userParam === 'person1' ? '#0077bb' : '#ff8c00';
+  const userEmoji = userParam === 'person1' ? '1️⃣' : '2️⃣';
 
   const [phase, setPhase] = useState<Phase>('start');
   const [battles, setBattles] = useState<[GuppyStrain, GuppyStrain][]>([]);
@@ -168,6 +168,7 @@ export default function RankPage() {
   const [ranked, setRanked] = useState<GuppyStrain[]>([]);
   const [saved, setSaved] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [resetConfirm, setResetConfirm] = useState(false);
 
   const startBattle = () => {
     const newBattles = generateBattles(guppyStrains, BATTLE_COUNT);
@@ -234,6 +235,9 @@ export default function RankPage() {
 
   const save = () => {
     localStorage.setItem(`guppy_rankings_${userParam}`, JSON.stringify(ranked.map(s => s.id)));
+    // legacy key cleanup
+    localStorage.removeItem(`guppy_rankings_husband`);
+    localStorage.removeItem(`guppy_rankings_wife`);
     setSaved(true);
     setShowToast(true);
     setTimeout(() => setShowToast(false), 3500);
@@ -427,6 +431,22 @@ export default function RankPage() {
             }}
           >
             ↺ Redo
+          </button>
+          <button
+            onClick={() => {
+              if (!resetConfirm) { setResetConfirm(true); setTimeout(() => setResetConfirm(false), 3000); return; }
+              localStorage.removeItem(`guppy_rankings_${userParam}`);
+              setResetConfirm(false);
+              setSaved(false);
+              setPhase('start');
+            }}
+            className="px-3 py-2 rounded-xl text-xs font-bold transition-all active:scale-95"
+            style={resetConfirm
+              ? { backgroundColor: 'rgba(239,68,68,0.2)', color: '#f87171', border: '1px solid rgba(239,68,68,0.4)' }
+              : { backgroundColor: 'rgba(255,255,255,0.04)', color: '#4a7090', border: '1px solid rgba(255,255,255,0.08)' }
+            }
+          >
+            {resetConfirm ? '⚠️ Confirm' : '🗑 Reset'}
           </button>
           <button
             onClick={save}

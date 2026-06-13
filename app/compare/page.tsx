@@ -29,8 +29,8 @@ export default function ComparePage() {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    const h = localStorage.getItem('guppy_rankings_husband');
-    const w = localStorage.getItem('guppy_rankings_wife');
+    const h = localStorage.getItem('guppy_rankings_person1');
+    const w = localStorage.getItem('guppy_rankings_person2');
     if (h) { try { setHusbandRanked(JSON.parse(h)); } catch {} }
     if (w) { try { setWifeRanked(JSON.parse(w)); } catch {} }
     setLoaded(true);
@@ -69,14 +69,14 @@ export default function ComparePage() {
         <div className="text-6xl mb-6">😅</div>
         <h1 className="text-2xl font-bold mb-4" style={{ color: '#00d4ff' }}>Both need rankings first!</h1>
         <div className="flex gap-4">
-          <Link href="/rank/husband">
+          <Link href="/rank/person1">
             <button className="px-6 py-3 rounded-xl font-bold" style={{ backgroundColor: '#0d1f3a', color: '#00d4ff', border: '1px solid rgba(0,212,255,0.3)' }}>
-              🤴 Husband&apos;s Rankings
+              1️⃣ Person 1&apos;s Rankings
             </button>
           </Link>
-          <Link href="/rank/wife">
+          <Link href="/rank/person2">
             <button className="px-6 py-3 rounded-xl font-bold" style={{ backgroundColor: '#0d1f3a', color: '#ffd700', border: '1px solid rgba(255,215,0,0.3)' }}>
-              👸 Wife&apos;s Rankings
+              2️⃣ Person 2&apos;s Rankings
             </button>
           </Link>
         </div>
@@ -96,14 +96,14 @@ export default function ComparePage() {
             </h1>
           </div>
           <div className="flex gap-3">
-            <Link href="/rank/husband">
+            <Link href="/rank/person1">
               <button className="px-4 py-2 rounded-xl text-sm font-medium" style={{ backgroundColor: '#0d1f3a', color: '#00d4ff', border: '1px solid rgba(0,212,255,0.3)' }}>
-                🤴 Re-rank Husband
+                1️⃣ Re-rank Person 1
               </button>
             </Link>
-            <Link href="/rank/wife">
+            <Link href="/rank/person2">
               <button className="px-4 py-2 rounded-xl text-sm font-medium" style={{ backgroundColor: '#0d1f3a', color: '#ffd700', border: '1px solid rgba(255,215,0,0.3)' }}>
-                👸 Re-rank Wife
+                2️⃣ Re-rank Person 2
               </button>
             </Link>
           </div>
@@ -184,11 +184,11 @@ export default function ComparePage() {
                     </span>
                     <div className="mt-3 flex gap-3">
                       <div className="flex-1 text-center p-2 rounded-lg" style={{ backgroundColor: 'rgba(0,212,255,0.1)' }}>
-                        <div className="text-xs" style={{ color: '#7dc8e0' }}>🤴 Husband</div>
+                        <div className="text-xs" style={{ color: '#7dc8e0' }}>1️⃣ Person 1</div>
                         <div className="font-bold" style={{ color: '#00d4ff' }}>#{match.husbandRank}</div>
                       </div>
                       <div className="flex-1 text-center p-2 rounded-lg" style={{ backgroundColor: 'rgba(255,215,0,0.1)' }}>
-                        <div className="text-xs" style={{ color: '#c4a882' }}>👸 Wife</div>
+                        <div className="text-xs" style={{ color: '#c4a882' }}>2️⃣ Person 2</div>
                         <div className="font-bold" style={{ color: '#ffd700' }}>#{match.wifeRank}</div>
                       </div>
                     </div>
@@ -204,7 +204,7 @@ export default function ComparePage() {
           {/* Husband */}
           <div className="rounded-2xl border overflow-hidden" style={{ borderColor: 'rgba(0,212,255,0.3)', backgroundColor: '#0d1f3a' }}>
             <div className="px-6 py-4 border-b" style={{ borderColor: 'rgba(0,212,255,0.2)', backgroundColor: 'rgba(0,212,255,0.05)' }}>
-              <h2 className="text-xl font-black" style={{ color: '#00d4ff' }}>🤴 Husband&apos;s Rankings</h2>
+              <h2 className="text-xl font-black" style={{ color: '#00d4ff' }}>1️⃣ Person 1&apos;s Rankings</h2>
               <p className="text-xs mt-1" style={{ color: '#7dc8e0' }}>{husbandRanked.length} strains ranked</p>
             </div>
             <div className="p-4 space-y-2 max-h-96 overflow-y-auto">
@@ -248,7 +248,7 @@ export default function ComparePage() {
           {/* Wife */}
           <div className="rounded-2xl border overflow-hidden" style={{ borderColor: 'rgba(255,215,0,0.3)', backgroundColor: '#0d1f3a' }}>
             <div className="px-6 py-4 border-b" style={{ borderColor: 'rgba(255,215,0,0.2)', backgroundColor: 'rgba(255,215,0,0.05)' }}>
-              <h2 className="text-xl font-black" style={{ color: '#ffd700' }}>👸 Wife&apos;s Rankings</h2>
+              <h2 className="text-xl font-black" style={{ color: '#ffd700' }}>2️⃣ Person 2&apos;s Rankings</h2>
               <p className="text-xs mt-1" style={{ color: '#c4a882' }}>{wifeRanked.length} strains ranked</p>
             </div>
             <div className="p-4 space-y-2 max-h-96 overflow-y-auto">
