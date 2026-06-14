@@ -2,6 +2,9 @@
 
 import { useEffect, useState, useRef } from 'react';
 
+// Two-step Wikimedia fetch:
+// 1. Search Commons for matching files
+// 2. Get direct upload.wikimedia.org URL via imageinfo API (no redirects)
 const imageCache = new Map<string, string | null>();
 
 interface WikiImageProps {
@@ -10,7 +13,7 @@ interface WikiImageProps {
   gradientFrom: string;
   gradientTo: string;
   className?: string;
-  photoUrl?: string; // direct URL — skips Wikimedia search entirely
+  photoUrl?: string;
 }
 
 export default function WikiImage({
@@ -28,20 +31,20 @@ export default function WikiImage({
   const fetchedRef = useRef(false);
 
   useEffect(() => {
-    // If a direct photo URL is provided, use it immediately
     if (photoUrl) {
       setImageUrl(photoUrl);
       setLoading(false);
       return;
     }
 
+    const cacheKey = query;
+
     const fetchImage = async () => {
       if (fetchedRef.current) return;
       fetchedRef.current = true;
 
-      // Check module-level cache
-      if (imageCache.has(query)) {
-        const cached = imageCache.get(query);
+      if (imageCache.has(cacheKey)) {
+        const cached = imageCache.get(cacheKey);
         setImageUrl(cached ?? null);
         setLoading(false);
         if (!cached) setError(true);
@@ -49,62 +52,82 @@ export default function WikiImage({
       }
 
       try {
-        const searchUrl =
-          `https://commons.wikimedia.org/w/api.php` +
-          `?action=query&list=search` +
-          `&srsearch=${encodeURIComponent(query)}` +
-          `&srnamespace=6&srlimit=8&format=json&origin=*&srprop=title`;
+        // Step 1: search Commons for image files matching the query
+        const searchRes = await fetch(
+          `https://commons.wikimedia.org/w/api.php?` +
+          `action=query&list=search` +
+          `&srsearch=${encodeURIComponent(query + ' male guppy')}` +
+          `&srnamespace=6&srlimit=10&format=json&origin=*&srprop=title`,
+        );
+        const searchData = await searchRes.json();
+        const results: { title: string }[] = searchData?.query?.search ?? [];
 
-        const res = await fetch(searchUrl);
-        const data = await res.json();
-        const results: { title: string }[] = data?.query?.search ?? [];
+        // Filter to image files only
+        const imageFiles = results.filter(r =>
+          /\.(jpg|jpeg|png|webp)$/i.test(r.title),
+        );
 
-        let found: string | null = null;
-        for (const result of results) {
-          if (/\.(jpg|jpeg|png|webp)$/i.test(result.title)) {
-            const filename = result.title.replace(/^File:/, '');
-            found =
-              `https://commons.wikimedia.org/wiki/Special:FilePath/` +
-              `${encodeURIComponent(filename)}?width=500`;
-            break;
-          }
+        // Fallback: try without "male guppy" suffix
+        if (imageFiles.length === 0) {
+          const fallbackRes = await fetch(
+            `https://commons.wikimedia.org/w/api.php?` +
+            `action=query&list=search` +
+            `&srsearch=${encodeURIComponent(query)}` +
+            `&srnamespace=6&srlimit=10&format=json&origin=*&srprop=title`,
+          );
+          const fallbackData = await fallbackRes.json();
+          const fallbackResults: { title: string }[] = fallbackData?.query?.search ?? [];
+          imageFiles.push(...fallbackResults.filter(r =>
+            /\.(jpg|jpeg|png|webp)$/i.test(r.title),
+          ));
         }
 
-        imageCache.set(query, found);
-        setImageUrl(found);
-        if (!found) setError(true);
+        if (imageFiles.length === 0) {
+          imageCache.set(cacheKey, null);
+          setError(true);
+          setLoading(false);
+          return;
+        }
+
+        // Step 2: get direct upload.wikimedia.org URL via imageinfo API
+        const fileTitle = imageFiles[0].title;
+        const infoRes = await fetch(
+          `https://commons.wikimedia.org/w/api.php?` +
+          `action=query&titles=${encodeURIComponent(fileTitle)}` +
+          `&prop=imageinfo&iiprop=url&iiurlwidth=500` +
+          `&format=json&origin=*`,
+        );
+        const infoData = await infoRes.json();
+        const pages = Object.values(infoData?.query?.pages ?? {}) as {
+          imageinfo?: { url: string; thumburl?: string }[];
+        }[];
+        const info = pages[0]?.imageinfo?.[0];
+        const directUrl = info?.thumburl ?? info?.url ?? null;
+
+        imageCache.set(cacheKey, directUrl);
+        setImageUrl(directUrl);
+        if (!directUrl) setError(true);
       } catch {
-        imageCache.set(query, null);
+        imageCache.set(cacheKey, null);
         setError(true);
       } finally {
         setLoading(false);
       }
     };
 
-    // Lazy-load: only fetch when the element scrolls into view
     const observer = new IntersectionObserver(
-      (entries) => {
+      entries => {
         if (entries[0].isIntersecting) {
           fetchImage();
           observer.disconnect();
         }
       },
-      { rootMargin: '300px' },
+      { rootMargin: '400px' },
     );
 
     if (containerRef.current) observer.observe(containerRef.current);
     return () => observer.disconnect();
   }, [query, photoUrl]);
-
-  const Fallback = () => (
-    <div
-      className="w-full h-full flex flex-col items-center justify-center gap-1"
-      style={{ background: `linear-gradient(135deg, ${gradientFrom}, ${gradientTo})` }}
-    >
-      <span className="text-4xl">🐟</span>
-      <span className="text-white/50 text-xs px-2 text-center leading-tight">{alt}</span>
-    </div>
-  );
 
   return (
     <div ref={containerRef} className={`relative overflow-hidden ${className}`}>
@@ -116,13 +139,21 @@ export default function WikiImage({
           alt={alt}
           className="w-full h-full object-cover"
           onError={() => {
-            imageCache.set(query, null);
+            imageCache.delete(query); // allow retry with next search result
             setError(true);
           }}
         />
       )}
 
-      {!loading && (!imageUrl || error) && <Fallback />}
+      {!loading && (!imageUrl || error) && (
+        <div
+          className="w-full h-full flex flex-col items-center justify-center gap-1 p-2"
+          style={{ background: `linear-gradient(135deg, ${gradientFrom}, ${gradientTo})` }}
+        >
+          <span className="text-3xl">🐟</span>
+          <span className="text-white/60 text-xs text-center leading-tight">{alt}</span>
+        </div>
+      )}
     </div>
   );
 }

@@ -8,7 +8,7 @@ import WikiImage from '@/components/WikiImage';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-const BATTLE_COUNT = 40;
+const BATTLE_COUNT = 80;
 
 function getRarityClass(rarity: Rarity) {
   const map: Record<Rarity, string> = {
@@ -256,7 +256,7 @@ export default function RankPage() {
             🐟 Guppy Battle Royale
           </p>
           <p className="text-sm mb-8" style={{ color: '#4a7090' }}>
-            See {BATTLE_COUNT} head-to-head matchups.<br />
+            {guppyStrains.length} strains • {BATTLE_COUNT} head-to-head battles<br />
             Tap the guppy you think looks cooler!
           </p>
 
