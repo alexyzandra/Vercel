@@ -30,6 +30,85 @@ export default function WikiImage({
   const containerRef = useRef<HTMLDivElement>(null);
   const fetchedRef = useRef(false);
 
+  // Lifted out so it can be called both from IntersectionObserver and from
+  // the photoUrl onError fallback path.
+  const fetchFromSearch = async () => {
+    if (fetchedRef.current) return;
+    fetchedRef.current = true;
+
+    const cacheKey = query;
+
+    if (imageCache.has(cacheKey)) {
+      const cached = imageCache.get(cacheKey);
+      setImageUrl(cached ?? null);
+      setLoading(false);
+      if (!cached) setError(true);
+      return;
+    }
+
+    try {
+      // Step 1: search Commons for image files matching the query
+      const searchRes = await fetch(
+        `https://commons.wikimedia.org/w/api.php?` +
+        `action=query&list=search` +
+        `&srsearch=${encodeURIComponent(query + ' male guppy')}` +
+        `&srnamespace=6&srlimit=10&format=json&origin=*&srprop=title`,
+      );
+      const searchData = await searchRes.json();
+      const results: { title: string }[] = searchData?.query?.search ?? [];
+
+      const imageFiles = results.filter(r =>
+        /\.(jpg|jpeg|png|webp)$/i.test(r.title),
+      );
+
+      // Fallback: try without "male guppy" suffix
+      if (imageFiles.length === 0) {
+        const fallbackRes = await fetch(
+          `https://commons.wikimedia.org/w/api.php?` +
+          `action=query&list=search` +
+          `&srsearch=${encodeURIComponent(query)}` +
+          `&srnamespace=6&srlimit=10&format=json&origin=*&srprop=title`,
+        );
+        const fallbackData = await fallbackRes.json();
+        const fallbackResults: { title: string }[] = fallbackData?.query?.search ?? [];
+        imageFiles.push(...fallbackResults.filter(r =>
+          /\.(jpg|jpeg|png|webp)$/i.test(r.title),
+        ));
+      }
+
+      if (imageFiles.length === 0) {
+        imageCache.set(cacheKey, null);
+        setError(true);
+        setLoading(false);
+        return;
+      }
+
+      // Step 2: get direct upload.wikimedia.org URL via imageinfo API
+      const fileTitle = imageFiles[0].title;
+      const infoRes = await fetch(
+        `https://commons.wikimedia.org/w/api.php?` +
+        `action=query&titles=${encodeURIComponent(fileTitle)}` +
+        `&prop=imageinfo&iiprop=url&iiurlwidth=500` +
+        `&format=json&origin=*`,
+      );
+      const infoData = await infoRes.json();
+      const pages = Object.values(infoData?.query?.pages ?? {}) as {
+        imageinfo?: { url: string; thumburl?: string }[];
+      }[];
+      const info = pages[0]?.imageinfo?.[0];
+      const directUrl = info?.thumburl ?? info?.url ?? null;
+
+      imageCache.set(cacheKey, directUrl);
+      setImageUrl(directUrl);
+      if (!directUrl) setError(true);
+    } catch {
+      imageCache.set(cacheKey, null);
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (photoUrl) {
       setImageUrl(photoUrl);
@@ -37,88 +116,11 @@ export default function WikiImage({
       return;
     }
 
-    const cacheKey = query;
-
-    const fetchImage = async () => {
-      if (fetchedRef.current) return;
-      fetchedRef.current = true;
-
-      if (imageCache.has(cacheKey)) {
-        const cached = imageCache.get(cacheKey);
-        setImageUrl(cached ?? null);
-        setLoading(false);
-        if (!cached) setError(true);
-        return;
-      }
-
-      try {
-        // Step 1: search Commons for image files matching the query
-        const searchRes = await fetch(
-          `https://commons.wikimedia.org/w/api.php?` +
-          `action=query&list=search` +
-          `&srsearch=${encodeURIComponent(query + ' male guppy')}` +
-          `&srnamespace=6&srlimit=10&format=json&origin=*&srprop=title`,
-        );
-        const searchData = await searchRes.json();
-        const results: { title: string }[] = searchData?.query?.search ?? [];
-
-        // Filter to image files only
-        const imageFiles = results.filter(r =>
-          /\.(jpg|jpeg|png|webp)$/i.test(r.title),
-        );
-
-        // Fallback: try without "male guppy" suffix
-        if (imageFiles.length === 0) {
-          const fallbackRes = await fetch(
-            `https://commons.wikimedia.org/w/api.php?` +
-            `action=query&list=search` +
-            `&srsearch=${encodeURIComponent(query)}` +
-            `&srnamespace=6&srlimit=10&format=json&origin=*&srprop=title`,
-          );
-          const fallbackData = await fallbackRes.json();
-          const fallbackResults: { title: string }[] = fallbackData?.query?.search ?? [];
-          imageFiles.push(...fallbackResults.filter(r =>
-            /\.(jpg|jpeg|png|webp)$/i.test(r.title),
-          ));
-        }
-
-        if (imageFiles.length === 0) {
-          imageCache.set(cacheKey, null);
-          setError(true);
-          setLoading(false);
-          return;
-        }
-
-        // Step 2: get direct upload.wikimedia.org URL via imageinfo API
-        const fileTitle = imageFiles[0].title;
-        const infoRes = await fetch(
-          `https://commons.wikimedia.org/w/api.php?` +
-          `action=query&titles=${encodeURIComponent(fileTitle)}` +
-          `&prop=imageinfo&iiprop=url&iiurlwidth=500` +
-          `&format=json&origin=*`,
-        );
-        const infoData = await infoRes.json();
-        const pages = Object.values(infoData?.query?.pages ?? {}) as {
-          imageinfo?: { url: string; thumburl?: string }[];
-        }[];
-        const info = pages[0]?.imageinfo?.[0];
-        const directUrl = info?.thumburl ?? info?.url ?? null;
-
-        imageCache.set(cacheKey, directUrl);
-        setImageUrl(directUrl);
-        if (!directUrl) setError(true);
-      } catch {
-        imageCache.set(cacheKey, null);
-        setError(true);
-      } finally {
-        setLoading(false);
-      }
-    };
-
+    // No hardcoded photo — lazy-load via Wikimedia Commons search
     const observer = new IntersectionObserver(
       entries => {
         if (entries[0].isIntersecting) {
-          fetchImage();
+          fetchFromSearch();
           observer.disconnect();
         }
       },
@@ -127,6 +129,7 @@ export default function WikiImage({
 
     if (containerRef.current) observer.observe(containerRef.current);
     return () => observer.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query, photoUrl]);
 
   return (
@@ -139,8 +142,16 @@ export default function WikiImage({
           alt={alt}
           className="w-full h-full object-cover"
           onError={() => {
-            imageCache.delete(query); // allow retry with next search result
-            setError(true);
+            if (imageUrl === photoUrl) {
+              // Hardcoded URL failed (404 etc.) — fall back to Commons search
+              setLoading(true);
+              setImageUrl(null);
+              fetchedRef.current = false;
+              fetchFromSearch();
+            } else {
+              imageCache.delete(query);
+              setError(true);
+            }
           }}
         />
       )}

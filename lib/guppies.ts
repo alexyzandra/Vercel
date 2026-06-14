@@ -26,6 +26,7 @@ export const guppyStrains: GuppyStrain[] = [
     gradientTo: '#4CAF50',
     traits: ['Random color spots', 'Iridescent scales', 'Fan tail'],
     wikiSearch: 'Poecilia reticulata wild male',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Guppy_Poecilia_reticulata.jpg/500px-Guppy_Poecilia_reticulata.jpg',
   },
   {
     id: 'delta-tail',
@@ -170,6 +171,7 @@ export const guppyStrains: GuppyStrain[] = [
     gradientTo: '#1565C0',
     traits: ['Solid blue body', 'Russian strain', 'Intense coloration'],
     wikiSearch: 'Moscow Blue guppy',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Guppy_pho_0048.jpg/500px-Guppy_pho_0048.jpg',
   },
   {
     id: 'moscow-green',
@@ -206,6 +208,7 @@ export const guppyStrains: GuppyStrain[] = [
     gradientTo: '#1A237E',
     traits: ['Jet black body', 'Blue iridescence', 'Hard to breed true'],
     wikiSearch: 'Black Moscow guppy',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/Guppy_male_moscow.jpg/500px-Guppy_male_moscow.jpg',
   },
   {
     id: 'yellow-cobra',
@@ -266,6 +269,7 @@ export const guppyStrains: GuppyStrain[] = [
     gradientTo: '#FF8F00',
     traits: ['Purple & gold', 'Complex pattern', 'Royal appearance'],
     wikiSearch: 'King Cobra guppy',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Cobra_Guppy_(Poecilia_reticulata).JPG/500px-Cobra_Guppy_(Poecilia_reticulata).JPG',
   },
   {
     id: 'blue-tuxedo',
@@ -386,6 +390,7 @@ export const guppyStrains: GuppyStrain[] = [
     gradientTo: '#E53935',
     traits: ['All red body', 'Uniform color', 'Show standard'],
     wikiSearch: 'Full Red guppy',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Guppy_-_FullRed_-_male.jpg/500px-Guppy_-_FullRed_-_male.jpg',
   },
   {
     id: 'albino-full-red',
@@ -422,6 +427,7 @@ export const guppyStrains: GuppyStrain[] = [
     gradientTo: '#37474F',
     traits: ['All black', 'Hard to breed', 'Dark allure'],
     wikiSearch: 'Full Black guppy',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Black_guppy.jpg/500px-Black_guppy.jpg',
   },
   {
     id: 'yellow-gold',
@@ -446,6 +452,7 @@ export const guppyStrains: GuppyStrain[] = [
     gradientTo: '#7B1FA2',
     traits: ['Multi-color patches', 'Unique pattern each fish', 'Living artwork'],
     wikiSearch: 'Mosaic guppy fancy',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/GuppyMosaicDeltaMale.jpg/500px-GuppyMosaicDeltaMale.jpg',
   },
   {
     id: 'leopard',
@@ -458,6 +465,7 @@ export const guppyStrains: GuppyStrain[] = [
     gradientTo: '#212121',
     traits: ['Spotted pattern', 'Leopard print', 'Wild appearance'],
     wikiSearch: 'Leopard guppy spotted',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Guppy_leopard_male.jpg/500px-Guppy_leopard_male.jpg',
   },
   {
     id: 'snakeskin-mosaic',
@@ -470,6 +478,7 @@ export const guppyStrains: GuppyStrain[] = [
     gradientTo: '#1A237E',
     traits: ['Snakeskin + mosaic', 'Complex pattern', 'Rare combination'],
     wikiSearch: 'Snakeskin Mosaic guppy',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Snakeskin_guppy.jpg/500px-Snakeskin_guppy.jpg',
   },
   {
     id: 'dumbo-ear',
@@ -482,6 +491,7 @@ export const guppyStrains: GuppyStrain[] = [
     gradientTo: '#0277BD',
     traits: ['Giant pectoral fins', 'Elephant ear shape', 'Unique body type'],
     wikiSearch: 'Dumbo Ear Elephant Ear guppy',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Dumbo_ear_guppy_male.jpg/500px-Dumbo_ear_guppy_male.jpg',
   },
   {
     id: 'dragon-head',
@@ -518,6 +528,7 @@ export const guppyStrains: GuppyStrain[] = [
     gradientTo: '#00BCD4',
     traits: ['Japanese blue gene', 'Deep uniform blue', 'Unique genetics'],
     wikiSearch: 'Japanese Blue guppy',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/Japan_blue_wildtype_guppy.jpg/500px-Japan_blue_wildtype_guppy.jpg',
   },
   {
     id: 'santa-maria',
@@ -578,6 +589,7 @@ export const guppyStrains: GuppyStrain[] = [
     gradientTo: '#00BCD4',
     traits: ['Electric blue', 'Glowing appearance', 'Neon coloration'],
     wikiSearch: 'Electric Blue Neon guppy',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Guppy_2_Sep_65.jpg/500px-Guppy_2_Sep_65.jpg',
   },
   {
     id: 'sunrise',
@@ -602,6 +614,7 @@ export const guppyStrains: GuppyStrain[] = [
     gradientTo: '#FFC107',
     traits: ['Separate species', 'Neon colors', 'Hyperactive'],
     wikiSearch: "Endler's livebearer Poecilia wingei",
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/Poecilia_wingei_Campoma_Guppy,_Campoma,_Venezuela,_male_101_de_20131123.jpg/500px-Poecilia_wingei_Campoma_Guppy,_Campoma,_Venezuela,_male_101_de_20131123.jpg',
   },
   {
     id: 'nebula',
@@ -918,5 +931,6 @@ export const guppyStrains: GuppyStrain[] = [
     gradientTo: '#80CBC4',
     traits: ['Separate species', 'Recently described', 'Trinidad origin'],
     wikiSearch: 'Poecilia obscura guppy Trinidad',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Poecilia_reticulata_Wild_Guppy_Trinidad_Caroni_Swamp_pair_20121228.JPG/500px-Poecilia_reticulata_Wild_Guppy_Trinidad_Caroni_Swamp_pair_20121228.JPG',
   },
 ];
