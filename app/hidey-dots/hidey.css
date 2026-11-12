@@ -1,0 +1,44 @@
+.hidey-root {
+  font-family: ui-rounded, 'SF Pro Rounded', 'Nunito', system-ui, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
+  color-scheme: only light;
+}
+
+@keyframes hidey-pop {
+  0% { transform: translate(-50%, -50%) scale(0) rotate(-20deg); }
+  60% { transform: translate(-50%, -50%) scale(1.25) rotate(8deg); }
+  100% { transform: translate(-50%, -50%) scale(1) rotate(0); }
+}
+.hidey-pop { animation: hidey-pop 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.2) both; }
+
+@keyframes hidey-stars {
+  0% { opacity: 0; transform: translateY(10px) scale(0.5); }
+  40% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-40px) scale(1.4); }
+}
+.hidey-stars { animation: hidey-stars 1.3s ease-out both; }
+
+@keyframes hidey-wobble {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+.hidey-wobble { animation: hidey-wobble 0.3s ease-in-out; }
+
+@keyframes hidey-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.hidey-bob { display: inline-block; animation: hidey-bob 1.6s ease-in-out infinite; }
+
+@keyframes hidey-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.07); }
+}
+.hidey-pulse { animation: hidey-pulse 1.2s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hidey-bob, .hidey-pulse, .hidey-wobble { animation: none; }
+}
