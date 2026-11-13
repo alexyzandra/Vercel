@@ -1,0 +1,27 @@
+{
+  "name": "hidey-dots-desktop",
+  "productName": "Hidey Dots",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Hidey Dots colour vision screening game for Windows",
+  "author": "Hidey Dots",
+  "main": "main.js",
+  "scripts": {
+    "build": "node build.mjs",
+    "start": "npm run build && electron .",
+    "test": "node test-win-settings.js",
+    "dist": "npm run build && electron-builder --win portable"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8",
+    "esbuild": "^0.24.0"
+  },
+  "build": {
+    "appId": "app.hideydots.desktop",
+    "files": ["main.js", "preload.js", "win-settings.js", "app/**"],
+    "directories": { "output": "dist" },
+    "win": { "target": "portable" },
+    "portable": { "artifactName": "HideyDots.exe" }
+  }
+}

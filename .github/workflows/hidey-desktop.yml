@@ -1,0 +1,41 @@
+name: Build Hidey Dots for Windows
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'desktop/**'
+      - 'components/hidey/**'
+      - 'lib/hidey/**'
+      - 'app/hidey-dots/**'
+      - '.github/workflows/hidey-desktop.yml'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install website dependencies (the game is shared with the site)
+        run: npm ci
+      - name: Install desktop dependencies
+        run: npm ci
+        working-directory: desktop
+      - name: Unit tests
+        run: npm test
+        working-directory: desktop
+      - name: Read real Windows display settings
+        run: node -e "require('./win-settings').readRaw().then(r => { console.log(JSON.stringify(r)); if (!r) process.exit(1); })"
+        working-directory: desktop
+      - name: Build HideyDots.exe
+        run: npm run dist
+        working-directory: desktop
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: HideyDots-Windows
+          path: desktop/dist/HideyDots.exe
+          if-no-files-found: error

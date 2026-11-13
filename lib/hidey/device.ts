@@ -183,3 +183,32 @@ export function runAutoChecks(): AutoCheck[] {
     },
   ];
 }
+
+/** What the desktop app reads from the operating system (see desktop/win-settings.js). */
+export interface NativeScreenReport {
+  deviceLabel: string;
+  checks: AutoCheck[];
+  /** Ids of manual steps the app has verified itself, so the parent isn't asked. */
+  covered: string[];
+  extraSteps: ManualStep[];
+}
+
+/** Real screen settings when running inside the desktop app, otherwise null. */
+export async function getNativeReport(): Promise<NativeScreenReport | null> {
+  const api = (window as Window & { hideyNative?: { getScreenSettings: () => Promise<NativeScreenReport> } }).hideyNative;
+  if (!api) return null;
+  try {
+    const report = await api.getScreenSettings();
+    if (mq('(dynamic-range: high)')) {
+      report.checks.push({
+        id: 'hdr',
+        ok: false,
+        label: 'HDR is on',
+        detail: 'HDR changes how colours are shown. Turn it off in Settings › System › Display, then press “Check again”.',
+      });
+    }
+    return report;
+  } catch {
+    return null;
+  }
+}

@@ -3,12 +3,14 @@
 import { useEffect, useState } from 'react';
 import {
   detectDevice,
+  getNativeReport,
   FAMILY_LABEL,
   MANUAL_STEPS,
   runAutoChecks,
   type AutoCheck,
   type DeviceFamily,
   type DeviceInfo,
+  type NativeScreenReport,
 } from '@/lib/hidey/device';
 
 export interface ScreenCheckResult {
@@ -24,21 +26,33 @@ export default function DeviceCheck({ onDone }: { onDone: (r: ScreenCheckResult)
   const [auto, setAuto] = useState<AutoCheck[]>([]);
   const [ticked, setTicked] = useState<Record<string, boolean>>({});
   const [picking, setPicking] = useState(false);
+  // Only set inside the desktop app, which can read the real display settings.
+  const [native, setNative] = useState<NativeScreenReport | null>(null);
+  const [checking, setChecking] = useState(false);
+
+  async function refresh() {
+    setChecking(true);
+    const report = await getNativeReport();
+    setNative(report);
+    setAuto([...(report?.checks ?? []), ...runAutoChecks()]);
+    setChecking(false);
+  }
 
   useEffect(() => {
-    setAuto(runAutoChecks());
+    void refresh();
     void detectDevice().then(setDevice);
   }, []);
 
   if (!device) return <div className="p-8 text-center text-slate-500">Checking this screen…</div>;
 
   const steps = [
-    ...MANUAL_STEPS[device.family],
+    ...MANUAL_STEPS[device.family].filter((s) => !native?.covered.includes(s.id)),
+    ...(native?.extraSteps ?? []),
     { id: 'grey', title: 'The card below looks plain grey', where: 'If it looks yellow, orange or pink, a warm or tinted screen mode is still on.' },
   ];
   const warnings = auto.filter((c) => !c.ok);
   const allTicked = steps.every((s) => ticked[s.id]);
-  const deviceLabel = device.model ? `${FAMILY_LABEL[device.family]} (${device.model})` : FAMILY_LABEL[device.family];
+  const deviceLabel = native ? native.deviceLabel : device.model ? `${FAMILY_LABEL[device.family]} (${device.model})` : FAMILY_LABEL[device.family];
   const finish = (complete: boolean) => onDone({ complete, deviceLabel });
 
   return (
@@ -57,13 +71,15 @@ export default function DeviceCheck({ onDone }: { onDone: (r: ScreenCheckResult)
             <p className="text-xs text-slate-500">This looks like</p>
             <p className="font-semibold">{deviceLabel}</p>
           </div>
-          <button
-            type="button"
-            onClick={() => setPicking((p) => !p)}
-            className="rounded-full border border-slate-300 px-3 py-2 text-sm font-medium"
-          >
-            {picking ? 'Close' : 'Not right?'}
-          </button>
+          {!native && (
+            <button
+              type="button"
+              onClick={() => setPicking((p) => !p)}
+              className="rounded-full border border-slate-300 px-3 py-2 text-sm font-medium"
+            >
+              {picking ? 'Close' : 'Not right?'}
+            </button>
+          )}
         </div>
         {picking && (
           <div className="mt-3 flex flex-wrap gap-2">
@@ -88,7 +104,17 @@ export default function DeviceCheck({ onDone }: { onDone: (r: ScreenCheckResult)
       </section>
 
       <section className="rounded-2xl bg-white p-4 shadow-sm">
-        <h2 className="font-semibold">Checked automatically</h2>
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="font-semibold">Checked automatically</h2>
+          <button
+            type="button"
+            onClick={() => void refresh()}
+            disabled={checking}
+            className="rounded-full border border-slate-300 px-3 py-2 text-sm font-medium disabled:opacity-50"
+          >
+            {checking ? 'Checking…' : 'Check again'}
+          </button>
+        </div>
         <ul className="mt-2 space-y-2 text-sm">
           {auto.map((c) => (
             <li key={c.id} className="flex gap-2">
@@ -104,7 +130,7 @@ export default function DeviceCheck({ onDone }: { onDone: (r: ScreenCheckResult)
 
       <section className="rounded-2xl bg-white p-4 shadow-sm">
         <h2 className="font-semibold">Please check these yourself</h2>
-        <p className="text-sm text-slate-600">A web page can’t read these settings, so tick each one once you’ve looked.</p>
+        <p className="text-sm text-slate-600">{native ? 'The app can’t read these' : 'A web page can’t read these settings'}, so tick each one once you’ve looked.</p>
         <ul className="mt-3 space-y-3">
           {steps.map((s) => (
             <li key={s.id}>
